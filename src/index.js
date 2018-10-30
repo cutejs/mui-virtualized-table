@@ -357,6 +357,7 @@ class MuiTable extends Component {
       rowHeight,
       columnWidth,
       includeHeaders,
+      headerRowRenderer,
       classes,
       orderBy,
       orderDirection,
@@ -406,6 +407,7 @@ class MuiTable extends Component {
       >
         <MultiGrid
           cellRenderer={this.cellRenderer}
+          headerRowRenderer={headerRowRenderer}
           ref={el => (this.multiGrid = el)}
           width={width}
           columnWidth={
