@@ -271,6 +271,8 @@ var MuiTable = function (_Component) {
       var containerHeight = maxHeight != null ? Math.min(calculatedHeightWithFooter, maxHeight) : calculatedHeightWithFooter;
       var multiGridHeight = containerHeight - (pagination ? paginationHeight : 0);
 
+      console.log(headerRowRenderer);
+
       return _react2.default.createElement(
         _Table2.default,
         _extends({

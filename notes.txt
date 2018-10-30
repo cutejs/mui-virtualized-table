@@ -1,0 +1,2 @@
+https://github.com/techniq/mui-table/commit/2a08597b95eaa8ca95075bdb7517beca63c5969a
+https://github.com/bvaughn/react-virtualized/issues/817

@@ -398,6 +398,8 @@ class MuiTable extends Component {
     const multiGridHeight =
       containerHeight - (pagination ? paginationHeight : 0);
 
+    console.log(headerRowRenderer);
+
     return (
       <Table
         component="div"
