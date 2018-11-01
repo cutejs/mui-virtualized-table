@@ -10,8 +10,9 @@ import TableFooter from '@material-ui/core/TableFooter';
 import TablePagination from '@material-ui/core/TablePagination';
 import TableSortLabel from '@material-ui/core/TableSortLabel';
 import Draggable from 'react-draggable';
+import memoize from 'memoize-one';
 
-import { calcColumnWidth } from './utils';
+import { calcColumnWidth, getHeaders, getColumns, getWidth, getDepth } from './utils';
 
 const FOOTER_BORDER_HEIGHT = 1;
 
@@ -185,6 +186,11 @@ class MuiTable extends Component {
       }
     );
 
+  getHeaders = memoize(getHeaders);
+  getColumns = memoize(getColumns);
+  getDepth = memoize(getDepth);
+  getWidth = memoize(getWidth);
+
   cellRenderer = ({ columnIndex, rowIndex, key, style }) => {
     const {
       data,
@@ -203,9 +209,21 @@ class MuiTable extends Component {
 
     const { hoveredColumn, hoveredRowData } = this.state;
 
-    const column = columns[columnIndex];
-    const isHeader = includeHeaders && rowIndex === 0;
-    const headerOffset = includeHeaders ? 1 : 0;
+    const column = this.getColumns(columns)[columnIndex];
+    const headerOffset = includeHeaders ? this.getDepth(columns) : 0;
+    const isHeader = includeHeaders && rowIndex < headerOffset;
+    const header = isHeader && this.getHeaders(columns)[rowIndex][columnIndex];
+
+    // if header is null that specifically means this is a header row, and it is a placeholder
+    // nothing should be rendered
+    if (header === null) {
+      return null;
+    }
+
+    console.log(columns);
+    console.log(column);
+    console.log(header);
+
     const rowData = (data && data[rowIndex - headerOffset]) || {};
 
     const isSelected = isCellSelected && isCellSelected(column, rowData);
@@ -230,9 +248,9 @@ class MuiTable extends Component {
       <div className={classes.cellContents}>
         <span style={{ flex: 'auto' }}>
           {isHeader
-            ? column.header != null
-              ? column.header
-              : column.name
+            ? header.header != null
+              ? header.header
+              : header.name
             : column.cell
               ? column.cell(rowData)
               : rowData[column.name]}
@@ -240,7 +258,7 @@ class MuiTable extends Component {
         <span style={{ float: 'right' }}>
           {isHeader &&
             resizable &&
-            columnIndex < columns.length - 1 && (
+            columnIndex < this.getColumns(columns).length - 1 && (
               <Draggable
                 axis="x"
                 defaultClassName={classes.dragHandle}
@@ -265,11 +283,16 @@ class MuiTable extends Component {
       [classes.cellHovered]: isHovered,
       [classes.cellSelected]: isSelected,
       [classes.cellHeader]: isHeader,
-      [classes.cellInLastColumn]: columnIndex === columns.length - 1,
+      [classes.cellInLastColumn]: columnIndex === this.getColumns(columns).length - 1,
       [classes.cellInLastRow]: rowIndex === (data ? data.length : 0)
     });
 
     const hasCellClick = !isHeader && onCellClick;
+
+    const spanStyle = isHeader && {
+      width: (header.colSpan || 1) * style.width,
+      height: (header.rowSpan || 1) * style.height,
+    };
 
     return (
       <TableCell
@@ -285,6 +308,7 @@ class MuiTable extends Component {
         style={{
           ...style,
           ...cellStyle,
+          ...spanStyle,
           ...((hasCellClick || column.onClick) && { cursor: 'pointer' })
         }}
         {...hasCellClick && {
@@ -357,7 +381,6 @@ class MuiTable extends Component {
       rowHeight,
       columnWidth,
       includeHeaders,
-      headerRowRenderer,
       classes,
       orderBy,
       orderDirection,
@@ -372,6 +395,12 @@ class MuiTable extends Component {
       ...props
     } = this.props;
 
+    const headerRowCount = includeHeaders ? this.getDepth(columns) : 0;
+    const columnCount = Array.isArray(columns) ? this.getWidth(columns) : 0;
+
+    console.log(headerRowCount)
+    console.log(columnCount)
+
     let calculatedHeight = 0;
     if (height) {
       calculatedHeight = height; // fixed height
@@ -382,7 +411,7 @@ class MuiTable extends Component {
       calculatedHeight = rowCount * rowHeight;
     } else if (Array.isArray(data)) {
       const rowCount =
-        data.length + (fixedRowCount ? fixedRowCount : includeHeaders ? 1 : 0);
+        data.length + (fixedRowCount ? fixedRowCount : includeHeaders ? headerRowCount : 0);
       calculatedHeight = rowCount * rowHeight;
     }
 
@@ -398,8 +427,6 @@ class MuiTable extends Component {
     const multiGridHeight =
       containerHeight - (pagination ? paginationHeight : 0);
 
-    console.log(headerRowRenderer);
-
     return (
       <Table
         component="div"
@@ -409,7 +436,6 @@ class MuiTable extends Component {
       >
         <MultiGrid
           cellRenderer={this.cellRenderer}
-          headerRowRenderer={headerRowRenderer}
           ref={el => (this.multiGrid = el)}
           width={width}
           columnWidth={
@@ -417,13 +443,13 @@ class MuiTable extends Component {
               ? ({ index }) => this.resizableColumnWidths(index, columns, width)
               : ({ index }) => calcColumnWidth(index, columns, width)
           }
-          columnCount={Array.isArray(columns) ? columns.length : 0}
+          columnCount={columnCount}
           fixedColumnCount={fixedColumnCount}
           enableFixedColumnScroll={fixedColumnCount > 0}
           height={multiGridHeight}
           rowHeight={rowHeight}
           rowCount={
-            Array.isArray(data) ? data.length + (includeHeaders ? 1 : 0) : 0
+            Array.isArray(data) ? data.length + headerRowCount : 0
           }
           fixedRowCount={fixedRowCount}
           enableFixedRowScroll={fixedRowCount > 0}

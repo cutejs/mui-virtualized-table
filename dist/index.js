@@ -240,7 +240,6 @@ var MuiTable = function (_Component) {
           rowHeight = _props.rowHeight,
           columnWidth = _props.columnWidth,
           includeHeaders = _props.includeHeaders,
-          headerRowRenderer = _props.headerRowRenderer,
           classes = _props.classes,
           orderBy = _props.orderBy,
           orderDirection = _props.orderDirection,
@@ -252,7 +251,7 @@ var MuiTable = function (_Component) {
           style = _props.style,
           theme = _props.theme,
           resizable = _props.resizable,
-          props = _objectWithoutProperties(_props, ['data', 'columns', 'width', 'height', 'maxHeight', 'pagination', 'fitHeightToRows', 'fixedRowCount', 'fixedColumnCount', 'rowHeight', 'columnWidth', 'includeHeaders', 'headerRowRenderer', 'classes', 'orderBy', 'orderDirection', 'onHeaderClick', 'onCellClick', 'isCellHovered', 'isCellSelected', 'cellProps', 'style', 'theme', 'resizable']);
+          props = _objectWithoutProperties(_props, ['data', 'columns', 'width', 'height', 'maxHeight', 'pagination', 'fitHeightToRows', 'fixedRowCount', 'fixedColumnCount', 'rowHeight', 'columnWidth', 'includeHeaders', 'classes', 'orderBy', 'orderDirection', 'onHeaderClick', 'onCellClick', 'isCellHovered', 'isCellSelected', 'cellProps', 'style', 'theme', 'resizable']);
 
       var calculatedHeight = 0;
       if (height) {
@@ -271,8 +270,6 @@ var MuiTable = function (_Component) {
       var containerHeight = maxHeight != null ? Math.min(calculatedHeightWithFooter, maxHeight) : calculatedHeightWithFooter;
       var multiGridHeight = containerHeight - (pagination ? paginationHeight : 0);
 
-      console.log(headerRowRenderer);
-
       return _react2.default.createElement(
         _Table2.default,
         _extends({
@@ -282,7 +279,6 @@ var MuiTable = function (_Component) {
         }, props),
         _react2.default.createElement(_MultiGrid2.default, {
           cellRenderer: this.cellRenderer,
-          headerRowRenderer: headerRowRenderer,
           ref: function ref(el) {
             return _this2.multiGrid = el;
           },
@@ -381,8 +377,8 @@ var _initialiseProps = function _initialiseProps() {
 
 
     var column = columns[columnIndex];
-    var isHeader = includeHeaders && rowIndex === 0;
-    var headerOffset = includeHeaders ? 1 : 0;
+    var isHeader = includeHeaders && rowIndex < 2 - 1;
+    var headerOffset = includeHeaders ? 2 : 0;
     var rowData = data && data[rowIndex - headerOffset] || {};
 
     var isSelected = isCellSelected && isCellSelected(column, rowData);
@@ -438,12 +434,32 @@ var _initialiseProps = function _initialiseProps() {
 
     var hasCellClick = !isHeader && onCellClick;
 
+    if (rowIndex === 0 && columnIndex > 1) {
+      return null;
+    }
+
+    if (columnIndex === 0 && rowIndex === 1) {
+      return null;
+    }
+
+    var rowSpan = 1;
+    var colSpan = 1;
+    if (rowIndex === 0 && columnIndex === 0) {
+      rowSpan = 2;
+    }
+
+    if (rowIndex === 0 && columnIndex > 0) {
+      colSpan = 2;
+    }
+
     return _react2.default.createElement(
       _TableCell2.default,
       _extends({
         component: 'div',
         className: className,
         key: key,
+        rowSpan: rowSpan,
+        colSpan: colSpan,
         onMouseEnter: function onMouseEnter() {
           _this3.setState({ hoveredColumn: column, hoveredRowData: rowData });
         },

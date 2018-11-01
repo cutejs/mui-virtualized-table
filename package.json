@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "classnames": "^2.2.5",
+    "memoize-one": "^4.0.2",
     "prop-types": "^15.6.1",
     "react-draggable": "^3.0.5",
     "react-virtualized": "^9.18.0"
@@ -36,7 +37,7 @@
   "scripts": {
     "test": "jest",
     "test-watch": "jest --watch",
-    "build": "babel src -d dist",
+    "build": "babel src -d ../bi-ui/node_modules/mui-virtualized-table/dist",
     "storybook": "start-storybook -p 9009 -c stories",
     "build-docs": "cd stories && yarn install && cd .. && build-storybook -c stories -o docs",
     "deploy-docs": "gh-pages -d docs",
