@@ -58,6 +58,7 @@ export function getHeaders(columns) {
     columns.forEach(column => {
       const columnDef = { ...column };
       delete columnDef.columns;
+      result[depth].push(columnDef);
        if (column.columns) {
         const colSpan = getWidth(column, 'columns');
         if (colSpan > 1) {
@@ -76,7 +77,6 @@ export function getHeaders(columns) {
           }
         }
       }
-      result[depth].push(columnDef);
     });
   }
   addItems(columns, 0);
@@ -105,6 +105,13 @@ export function getHeaders(columns) {
    return depth + 1;
 }
  export function getWidth(item, childProp = 'columns') {
+   if (Array.isArray(item)) {
+     let width = 0;
+     item.forEach(child => {
+       width += getWidth(child, childProp);
+     });
+     return width;
+   }
   if (item[childProp] == null) {
     return 1;
   }

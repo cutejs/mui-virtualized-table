@@ -220,11 +220,8 @@ class MuiTable extends Component {
       return null;
     }
 
-    console.log(columns);
-    console.log(column);
-    console.log(header);
-
-    const rowData = (data && data[rowIndex - headerOffset]) || {};
+    const rowDataIndex = rowIndex - headerOffset;
+    const rowData = (data && data[rowDataIndex]) || {};
 
     const isSelected = isCellSelected && isCellSelected(column, rowData);
 
@@ -283,8 +280,8 @@ class MuiTable extends Component {
       [classes.cellHovered]: isHovered,
       [classes.cellSelected]: isSelected,
       [classes.cellHeader]: isHeader,
-      [classes.cellInLastColumn]: columnIndex === this.getColumns(columns).length - 1,
-      [classes.cellInLastRow]: rowIndex === (data ? data.length : 0)
+      [classes.cellInLastColumn]: columnIndex === this.getWidth(columns) - 1,
+      [classes.cellInLastRow]: rowDataIndex === (data ? data.length - 1: 0)
     });
 
     const hasCellClick = !isHeader && onCellClick;
@@ -315,6 +312,10 @@ class MuiTable extends Component {
           onClick: () => onCellClick(column, rowData)
         }} // Can be overridden by cellProps.onClick on column definition
         {...cellProps}
+        dataRow={rowIndex}
+        dataCol={columnIndex}
+        dataRowSpan={isHeader && header.rowSpan}
+        dataColSpan={isHeader && header.colSpan}
       >
         {isHeader &&
         column.onHeaderClick !== false &&
@@ -398,9 +399,6 @@ class MuiTable extends Component {
     const headerRowCount = includeHeaders ? this.getDepth(columns) : 0;
     const columnCount = Array.isArray(columns) ? this.getWidth(columns) : 0;
 
-    console.log(headerRowCount)
-    console.log(columnCount)
-
     let calculatedHeight = 0;
     if (height) {
       calculatedHeight = height; // fixed height
@@ -440,8 +438,8 @@ class MuiTable extends Component {
           width={width}
           columnWidth={
             columnWidth || resizable
-              ? ({ index }) => this.resizableColumnWidths(index, columns, width)
-              : ({ index }) => calcColumnWidth(index, columns, width)
+              ? ({ index }) => this.resizableColumnWidths(index, this.getColumns(columns), width)
+              : ({ index }) => calcColumnWidth(index, this.getColumns(columns), width)
           }
           columnCount={columnCount}
           fixedColumnCount={fixedColumnCount}
