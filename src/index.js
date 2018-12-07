@@ -312,10 +312,6 @@ class MuiTable extends Component {
           onClick: () => onCellClick(column, rowData)
         }} // Can be overridden by cellProps.onClick on column definition
         {...cellProps}
-        dataRow={rowIndex}
-        dataCol={columnIndex}
-        dataRowSpan={isHeader && header.rowSpan}
-        dataColSpan={isHeader && header.colSpan}
       >
         {isHeader &&
         column.onHeaderClick !== false &&
